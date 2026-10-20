@@ -15,29 +15,16 @@ class Produto:
 
     def descricao(self):
         return f"{self.nome} {self.tamanho}: R$ {self.preco:.2f}"
-    import pytest
 
-from loja.produto import Produto
+    def para_dict(self):
+        """O produto em formato de dicionário, pronto para virar JSON."""
+        return {
+            "tipo": type(self).__name__,
+            "nome": self.nome,
+            "preco": self.preco,
+            "tamanho": self.tamanho,
+        }
 
-
-def test_produto_valido():
-    camiseta = Produto("Camiseta básica", 39.90, "M")
-    assert camiseta.descricao() == "Camiseta básica M: R$ 39.90"
-
-
-def test_preco_zero_nao_e_aceito():
-    with pytest.raises(ValueError):
-        Produto("Camiseta básica", 0, "M")
-
-
-def test_nome_vazio_nao_e_aceito():
-    with pytest.raises(ValueError):
-        Produto("", 39.90, "M")
-
-
-def test_tamanho_invalido_nao_e_aceito():
-    with pytest.raises(ValueError):
-        Produto("Camiseta básica", 39.90, "XG")
 
 class Camiseta(Produto):
     MANGAS = ("curta", "longa")
@@ -51,6 +38,11 @@ class Camiseta(Produto):
     def descricao(self):
         return f"{super().descricao()} · manga {self.manga}"
 
+    def para_dict(self):
+        dados = super().para_dict()
+        dados["manga"] = self.manga
+        return dados
+
 
 class Calca(Produto):
     def __init__(self, nome, preco, tamanho, modelagem):
@@ -59,3 +51,8 @@ class Calca(Produto):
 
     def descricao(self):
         return f"{super().descricao()} · {self.modelagem}"
+
+    def para_dict(self):
+        dados = super().para_dict()
+        dados["modelagem"] = self.modelagem
+        return dados
