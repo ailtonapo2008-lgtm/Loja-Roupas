@@ -1,14 +1,33 @@
 import pytest
 from fastapi.testclient import TestClient
+from sqlmodel import Session
 
-from api import app
+from api import app, obter_sessao, popular_se_vazio
+from loja.banco import criar_tabelas, engine_em_memoria
+from loja.repositorio import RepositorioProdutos
+from loja.servico import ServicoCatalogo
 
 cliente = TestClient(app)
 
+BONE = {"nome": "Boné", "preco": 49.90, "tamanho": "M"}
+
 
 @pytest.fixture(autouse=True)
-def carrinho_vazio():
+def banco_de_teste():
+    """Cada teste ganha um banco novo, na memória, com os 3 produtos."""
+    engine = engine_em_memoria()
+    criar_tabelas(engine)
+    with Session(engine) as sessao:
+        popular_se_vazio(ServicoCatalogo(RepositorioProdutos(sessao)))
+
+    def sessao_de_teste():
+        with Session(engine) as sessao:
+            yield sessao
+
+    app.dependency_overrides[obter_sessao] = sessao_de_teste
     cliente.delete("/carrinho")
+    yield
+    app.dependency_overrides.clear()
 
 
 def test_vitrine_tem_tres_produtos():
@@ -49,3 +68,32 @@ def test_total_com_promocao_sem_frete():
 def test_total_abaixo_de_200_paga_frete():
     cliente.post("/carrinho/itens", json={"produto_id": 1, "quantidade": 1})
     assert cliente.get("/carrinho/total").json()["total"] == 50.91
+
+
+def test_cadastrar_produto_da_201():
+    resposta = cliente.post("/produtos", json=BONE)
+    assert resposta.status_code == 201
+    assert resposta.json()["id"] == 4
+
+
+def test_nome_repetido_da_409():
+    cliente.post("/produtos", json=BONE)
+    resposta = cliente.post("/produtos", json=BONE)
+    assert resposta.status_code == 409
+
+
+def test_preco_zero_da_422():
+    resposta = cliente.post("/produtos", json={**BONE, "preco": 0})
+    assert resposta.status_code == 422
+
+
+def test_alterar_produto():
+    resposta = cliente.put("/produtos/3", json={"nome": "Moletom", "preco": 149.90, "tamanho": "P"})
+    assert resposta.status_code == 200
+    assert resposta.json()["preco"] == 149.90
+    assert cliente.put("/produtos/99", json=BONE).status_code == 404
+
+
+def test_remover_produto():
+    assert cliente.delete("/produtos/3").status_code == 204
+    assert cliente.get("/produtos/3").status_code == 404
