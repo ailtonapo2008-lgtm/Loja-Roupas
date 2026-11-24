@@ -1,19 +1,17 @@
-const produtos = [
-    { nome: "Camiseta básica", preco: 39.9, tam: "M" },
-    { nome: "Calça jeans", preco: 129.0, tam: "G" },
-    { nome: "Moletom", preco: 159.9, tam: "M" }
-];
+const API = "http://127.0.0.1:8000";
+let produtos = [];
 
 const vitrine = document.querySelector("#vitrine");
 const busca = document.querySelector("#busca");
+const estado = document.querySelector("#estado");
 
 function montarCard(p) {
     const art = document.createElement("article");
     art.className = "produto";
     art.innerHTML = `
         <h3>${p.nome}</h3>
-        <p>R$ ${p.preco.toFixed(2)}</p>
-        <p>Tamanho ${p.tam}</p>
+        <p>Tamanho ${p.tamanho}</p>
+        <p><strong>R$ ${p.preco.toFixed(2)}</strong></p>
     `;
     return art;
 }
@@ -22,6 +20,26 @@ function desenhar(lista) {
     if (!vitrine) return;
     vitrine.innerHTML = "";
     lista.forEach(p => vitrine.append(montarCard(p)));
+}
+
+async function carregar() {
+    if (estado) estado.textContent = "Carregando produtos...";
+    try {
+        const resposta = await fetch(`${API}/produtos`);
+        if (!resposta.ok) {
+            throw new Error(`A API respondeu ${resposta.status}`);
+        }
+        produtos = await resposta.json();
+        desenhar(produtos);
+        if (estado) {
+            estado.textContent = produtos.length === 0 ? "Nenhum produto cadastrado ainda." : "";
+        }
+    } catch (erro) {
+        if (estado) {
+            estado.textContent = "Não foi possível falar com a API. Ela está ligada?";
+        }
+        console.error(erro);
+    }
 }
 
 if (busca) {
@@ -34,29 +52,4 @@ if (busca) {
     });
 }
 
-const form = document.querySelector("#form-produto");
-const aviso = document.querySelector("#aviso");
-
-if (form) {
-    form.addEventListener("submit", (e) => {
-        e.preventDefault();
-        const nome = document.querySelector("#nome").value.trim();
-        const preco = Number(document.querySelector("#preco").value);
-
-        if (nome === "") {
-            aviso.textContent = "Informe o nome do produto.";
-            return;
-        }
-
-        if (!(preco > 0)) {
-            aviso.textContent = "O preço precisa ser maior que zero.";
-            return;
-        }
-
-        produtos.push({ nome, preco, tam: "M" });
-        form.reset();
-        aviso.textContent = "Produto cadastrado.";
-    });
-}
-
-desenhar(produtos);
+carregar();

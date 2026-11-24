@@ -3,6 +3,7 @@ from typing import Literal
 
 from fastapi import Depends, FastAPI
 from fastapi.responses import JSONResponse
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 from sqlmodel import Session
 
@@ -12,7 +13,6 @@ from loja.promocao import Percentual
 from loja.repositorio import RepositorioProdutos
 from loja.servico import (DadosInvalidos, ProdutoJaExiste, ProdutoNaoEncontrado,
                           ServicoCatalogo, com_id)
-
 
 
 class ProdutoEntrada(BaseModel):
@@ -27,7 +27,6 @@ class ProdutoEntrada(BaseModel):
 class ItemPedido(BaseModel):
     produto_id: int
     quantidade: int = Field(gt=0, le=10)
-
 
 
 engine = criar_engine()
@@ -57,6 +56,13 @@ async def ciclo_de_vida(app):
 
 app = FastAPI(title="Loja de Roupas", lifespan=ciclo_de_vida)
 
+# Configuração correta do CORS para liberar a porta 5500 do front-end
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://127.0.0.1:5500", "http://localhost:5500"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 def obter_sessao():
@@ -66,7 +72,6 @@ def obter_sessao():
 
 def obter_servico(sessao: Session = Depends(obter_sessao)):
     return ServicoCatalogo(RepositorioProdutos(sessao))
-
 
 
 @app.exception_handler(ProdutoNaoEncontrado)
@@ -82,7 +87,6 @@ def ja_existe(request, erro):
 @app.exception_handler(DadosInvalidos)
 def dados_invalidos(request, erro):
     return JSONResponse(status_code=422, content={"detail": str(erro)})
-
 
 
 @app.get("/")
@@ -116,7 +120,6 @@ def atualizar_produto(produto_id: int, dados: ProdutoEntrada,
 @app.delete("/produtos/{produto_id}", status_code=204)
 def remover_produto(produto_id: int, servico=Depends(obter_servico)):
     servico.remover(produto_id)
-
 
 
 def novo_carrinho():
