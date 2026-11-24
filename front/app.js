@@ -19,16 +19,44 @@ function montarCard(p) {
 }
 
 function desenhar(lista) {
+    if (!vitrine) return;
     vitrine.innerHTML = "";
     lista.forEach(p => vitrine.append(montarCard(p)));
 }
 
-busca.addEventListener("input", (e) => {
-    const termo = e.target.value.toLowerCase();
-    const achados = produtos.filter(
-        p => p.nome.toLowerCase().includes(termo)
-    );
-    desenhar(achados);
-});
+if (busca) {
+    busca.addEventListener("input", (e) => {
+        const termo = e.target.value.toLowerCase();
+        const achados = produtos.filter(
+            p => p.nome.toLowerCase().includes(termo)
+        );
+        desenhar(achados);
+    });
+}
+
+const form = document.querySelector("#form-produto");
+const aviso = document.querySelector("#aviso");
+
+if (form) {
+    form.addEventListener("submit", (e) => {
+        e.preventDefault();
+        const nome = document.querySelector("#nome").value.trim();
+        const preco = Number(document.querySelector("#preco").value);
+
+        if (nome === "") {
+            aviso.textContent = "Informe o nome do produto.";
+            return;
+        }
+
+        if (!(preco > 0)) {
+            aviso.textContent = "O preço precisa ser maior que zero.";
+            return;
+        }
+
+        produtos.push({ nome, preco, tam: "M" });
+        form.reset();
+        aviso.textContent = "Produto cadastrado.";
+    });
+}
 
 desenhar(produtos);
