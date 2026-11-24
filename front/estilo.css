@@ -1,0 +1,131 @@
+
+:root {
+    --verde: #1f6f6b;
+    --tinta: #1b1c1f;
+    --fundo: #f3efe6;
+    --cartao: #fffdf8;
+    --borda: #e2dccd;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: system-ui, sans-serif;
+    color: var(--tinta);
+    background: var(--fundo);
+    line-height: 1.5;
+}
+
+
+header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 12px 24px;
+    background: var(--verde);
+    color: #fff;
+}
+
+header p {
+    font-size: 1.3rem;
+    font-weight: 700;
+    margin: 0;
+}
+
+nav {
+    margin-left: auto;
+    display: flex;
+    gap: 20px;
+}
+
+nav a {
+    color: #fff;
+    text-decoration: none;
+}
+
+nav a:hover {
+    text-decoration: underline;
+}
+
+main {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 24px;
+}
+
+
+section {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+}
+
+section h2 {
+    grid-column: 1 / -1;
+    margin: 0;
+}
+
+
+article {
+    background: var(--cartao);
+    border: 1px solid var(--borda);
+    border-radius: 12px;
+    padding: 16px;
+}
+
+article h3 {
+    margin-top: 0;
+}
+
+button {
+    background: var(--verde);
+    color: #fff;
+    border: 0;
+    border-radius: 8px;
+    padding: 10px 16px;
+    font-size: 1rem;
+    cursor: pointer;
+}
+
+button:hover {
+    opacity: 0.9;
+}
+
+
+.formulario {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-width: 420px;
+}
+
+.formulario input,
+.formulario select {
+    font-size: 1rem;
+    padding: 10px;
+    border: 1px solid var(--borda);
+    border-radius: 8px;
+    background: #fff;
+}
+
+.formulario button {
+    margin-top: 12px;
+    align-self: flex-start;
+}
+
+/* Responsividade para celulares */
+@media (max-width: 700px) {
+    section {
+        grid-template-columns: 1fr;
+    }
+    header {
+        flex-wrap: wrap;
+    }
+    nav {
+        margin-left: 0;
+        width: 100%;
+    }
+}
