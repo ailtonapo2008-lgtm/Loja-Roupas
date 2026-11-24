@@ -5,6 +5,7 @@ const produtos = [
 ];
 
 const vitrine = document.querySelector("#vitrine");
+const busca = document.querySelector("#busca");
 
 function montarCard(p) {
     const art = document.createElement("article");
@@ -21,5 +22,13 @@ function desenhar(lista) {
     vitrine.innerHTML = "";
     lista.forEach(p => vitrine.append(montarCard(p)));
 }
+
+busca.addEventListener("input", (e) => {
+    const termo = e.target.value.toLowerCase();
+    const achados = produtos.filter(
+        p => p.nome.toLowerCase().includes(termo)
+    );
+    desenhar(achados);
+});
 
 desenhar(produtos);
